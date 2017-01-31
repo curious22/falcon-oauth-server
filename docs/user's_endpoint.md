@@ -39,14 +39,14 @@ __Error Response__:
 - Code: 20 
 - Description: User with this email already exists
 - Content:
-    ```json
-    {
-      "meta": {
-        "code": 20,
-        "message": "User with this email already exists"
-      }
-    }
-    ```
+```json
+{
+  "meta": {
+    "code": 20,
+    "message": "User with this email is already exist"
+  }
+}
+```
 
 ***
 
