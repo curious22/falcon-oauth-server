@@ -1,0 +1,10 @@
+Cerberus==1.1
+Cython==0.25.2
+falcon==1.1.0
+gunicorn==19.6.0
+itsdangerous==0.24
+psycopg2==2.6.2
+pytest==3.0.6
+python-decouple==3.0
+requests==2.13.0
+SQLAlchemy==1.1.5
