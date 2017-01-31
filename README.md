@@ -52,6 +52,10 @@ LOG_LEVEL=DEBUG
 
 2. Navigate to `http://0.0.0.0:5000/`
 
+### Run tests
+
+Type `pytest -v`
+
 ## Docs
 
 API endpoints:
