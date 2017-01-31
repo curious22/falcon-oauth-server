@@ -2,13 +2,14 @@
 
 import falcon
 
+from sqlalchemy.orm.exc import NoResultFound
 from cerberus import Validator, DocumentError
 
 from app import log
 from app.resources.base import BaseResource
 from app.utils.auth import encrypt_token, hash_password, uuid
 from app.model import User
-from app.errors import AppError, InvalidParameterError
+from app import errors
 
 LOG = log.get_logger()
 
@@ -46,9 +47,9 @@ def validate_user_create(req, res, resource, params):
     v = Validator(schema)
     try:
         if not v.validate(req.context['data']):
-            raise InvalidParameterError(v.errors)
+            raise errors.InvalidParameterError(v.errors)
     except DocumentError:
-        raise InvalidParameterError('Invalid Request %s' % req.context)
+        raise errors.InvalidParameterError('Invalid Request %s' % req.context)
 
 
 class Collection(BaseResource):
@@ -59,19 +60,27 @@ class Collection(BaseResource):
     def on_post(self, req, res):
         session = req.context['session']
         user_req = req.context['data']
-        print(req.context['data'])
-        if user_req:
-            user = User()
+
+        if not user_req:
+            raise errors.InvalidParameterError(req.context['data'])
+
+        user = User()
+        try:
+            existing_user = user.find_by_email(session, user_req['email'])
+
+            if existing_user:
+                raise errors.UserExistsError()
+
+        except NoResultFound:
             user.username = user_req['username']
             user.email = user_req['email']
             user.password = hash_password(user_req['password']).decode('utf-8')
             sid = uuid()
             user.sid = sid
             user.token = encrypt_token(sid).decode('utf-8')
+
             session.add(user)
             self.on_success(res, None)
-        else:
-            raise InvalidParameterError(req.context['data'])
 
     # @falcon.before(auth_required)
     def on_get(self, req, res):
@@ -81,7 +90,7 @@ class Collection(BaseResource):
             obj = [user.to_dict() for user in user_dbs]
             self.on_success(res, obj)
         else:
-            raise AppError()
+            raise errors.AppError()
 
     # @falcon.before(auth_required)
     def on_put(self, req, res):

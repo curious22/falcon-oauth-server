@@ -1,5 +1,25 @@
 # falcon-oauth-server
 
+An implementation of OAuth REST API server on Falcon. Based on 
+[falcon-rest-api](https://github.com/ziwon/falcon-rest-api) repository.
+
+## Requirements
+
+ - Python 3.5.2
+ - Cerberus 1.1
+ - Cython 0.25.2
+ - falcon 1.1.0
+ - gunicorn 19.6.0
+ - itsdangerous 0.24
+ - psycopg2 2.6.2
+ - pytest 3.0.6
+ - python-decouple 3.0
+ - requests 2.13.0
+ - SQLAlchemy 1.1.5
+
+
+## Local deployment
+
 ### Create PostgreSQL DB for local development:
 
 1. Change user: `sudo su postgres`
@@ -23,4 +43,16 @@ GRANT ALL PRIVILEGES ON DATABASE oauth_db TO admin;
 ```
 SECRET_KEY=YourSecretKey
 DB_URI=dialect+driver://username:password@host:port/database
+LOG_LEVEL=DEBUG
 ```
+
+### Run server
+
+1. Type `make start-server`
+
+2. Navigate to `http://0.0.0.0:5000/`
+
+## Docs
+
+API endpoints:
+ - [/v1/users](docs/user's_endpoint.md)

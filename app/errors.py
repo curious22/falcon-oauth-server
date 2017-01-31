@@ -44,6 +44,11 @@ ERR_NOT_SUPPORTED = {
     'title': 'Not Supported'
 }
 
+ERR_USER_EXISTS = {
+    'status': falcon.HTTP_400,
+    'code': 20,
+    'title': 'User with this email already exists'
+}
 
 ERR_USER_NOT_EXISTS = {
     'status': falcon.HTTP_404,
@@ -103,6 +108,11 @@ class DatabaseError(AppError):
         obj['details'] = ', '.join(args)
         obj['params'] = str(params)
         self.error['description'] = obj
+
+
+class UserExistsError(AppError):
+    def __init__(self):
+        super().__init__(ERR_USER_EXISTS)
 
 
 class NotSupportedError(AppError):
