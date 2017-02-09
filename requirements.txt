@@ -8,3 +8,4 @@ pytest==3.0.6
 python-decouple==3.0
 requests==2.13.0
 SQLAlchemy==1.1.5
+-e git+https://github.com/yohanboniface/falcon-oauth#egg=falcon-oauth
