@@ -2,6 +2,9 @@
 
 import falcon
 import json
+from datetime import timedelta
+from falcon_oauth.provider.oauth2 import OAuthProvider
+from falcon_oauth.utils import utcnow
 
 try:
     from collections import OrderedDict
@@ -11,6 +14,7 @@ except ImportError:
 from app import log
 from app.utils.alchemy import new_alchemy_encoder
 from app.errors import NotSupportedError
+from app import model
 
 LOG = log.get_logger()
 
@@ -62,4 +66,50 @@ class BaseResource(object):
 
     def on_delete(self, req, res):
         raise NotSupportedError(method='DELETE', url=req.path)
+
+auth = OAuthProvider()
+
+
+@auth.clientgetter
+def clientgetter(client_id):
+    return model.Client.select().where(model.Client.client_id == client_id).first()
+
+
+@auth.usergetter
+def usergetter(username, password, client, req):
+    user = model.User.select().where(model.User.username == username).first()
+    if user and user.check_password(password):
+        return user
+    return None
+
+
+@auth.tokengetter
+def tokengetter(access_token=None, refresh_token=None):
+    if access_token:
+        return model.Token.select().where(model.Token.access_token == access_token).first()
+
+
+@auth.tokensetter
+def tokensetter(metadata, req, *args, **kwargs):
+    metadata['user'] = req.headers['X-User-Id']
+    metadata['client'] = req.client_id
+    return model.Token.create(**metadata)
+
+
+@auth.grantgetter
+def grantgetter(client_id, code):
+    return model.Grant.get(model.Grant.client == client_id, model.Grant.code == code)
+
+
+@auth.grantsetter
+def grantsetter(client_id, code, req, *args, **kwargs):
+    expires = utcnow() + timedelta(seconds=100)
+    model.Grant.create(
+        client_id=client_id,
+        code=code['code'],
+        redirect_uri=req.context.get('redirect_uri'),
+        scope=' '.join(req.context.get('scopes')),
+        user_id=req.context['user'].id,
+        expires=expires,
+    )
 

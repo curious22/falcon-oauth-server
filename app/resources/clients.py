@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import falcon
-
 from app.resources.base import BaseResource
 from app.model import Client
 from app import errors
