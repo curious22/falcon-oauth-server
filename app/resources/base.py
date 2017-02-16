@@ -15,6 +15,7 @@ from app import log
 from app.utils.alchemy import new_alchemy_encoder
 from app.errors import NotSupportedError
 from app import model
+from app.utils import auth as auth_utils
 
 LOG = log.get_logger()
 
@@ -71,14 +72,20 @@ auth = OAuthProvider()
 
 
 @auth.clientgetter
-def clientgetter(client_id):
-    return model.Client.select().where(model.Client.client_id == client_id).first()
+def clientgetter(client_id, req):
+    session = req.context['session']
+    return session.query(model.Client).filter_by(client_id=client_id).first()
 
 
 @auth.usergetter
-def usergetter(username, password, client, req):
-    user = model.User.select().where(model.User.username == username).first()
-    if user and user.check_password(password):
+def usergetter(username, password, req):
+    session = req.context['session']
+
+    user = session.query(model.User).filter_by(username=username).first()
+    if user and auth_utils.verify_password(
+            password,
+            username.passwordencode('utf-8')
+    ):
         return user
     return None
 

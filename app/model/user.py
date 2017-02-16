@@ -17,8 +17,8 @@ class User(Base):
     sid = Column(String(10), nullable=False)
 
     def __repr__(self):
-        return "<User(name='%s', email='%s', token='%s', info='%s')>" % \
-            (self.username, self.email, self.token, self.info)
+        return "<User(id='%s', name='%s', email='%s')>" % \
+            (self.user_id, self.username, self.email)
 
     @classmethod
     def get_id(cls):
