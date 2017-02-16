@@ -35,3 +35,14 @@ class Grant(Base):
         if self.scope:
             return self.scope.split()
         return None
+
+    FIELDS = {
+        'user_id': int,
+        'client_id': str,
+        'code': str,
+        'redirect_uri': str,
+        'scope': str,
+        'expires': str
+    }
+
+    FIELDS.update(Base.FIELDS)
