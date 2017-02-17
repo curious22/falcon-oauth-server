@@ -91,32 +91,47 @@ def usergetter(username, password, req):
 
 
 @auth.tokengetter
-def tokengetter(access_token=None, refresh_token=None):
+def tokengetter(req, access_token=None):
+    session = req.context['session']
+
     if access_token:
-        return model.Token.select().where(model.Token.access_token == access_token).first()
+        return session.query(model.Token).filter_by(access_token=access_token).first()
 
 
 @auth.tokensetter
 def tokensetter(metadata, req, *args, **kwargs):
-    metadata['user'] = req.headers['X-User-Id']
-    metadata['client'] = req.client_id
-    return model.Token.create(**metadata)
+    session = req.context['session']
+
+    metadata['user_id'] = req.headers['X-User-Id']
+    metadata['client_id'] = req.client_id
+
+    token = model.Token(**metadata)
+    session.add(token)
+    session.commit()
+
+    return token
 
 
 @auth.grantgetter
-def grantgetter(client_id, code):
-    return model.Grant.get(model.Grant.client == client_id, model.Grant.code == code)
+def grantgetter(client_id, code, req):
+    session = req.context['session']
+
+    return session.query(model.Grant).filter_by(client_id=client_id, code=code)
 
 
 @auth.grantsetter
-def grantsetter(client_id, code, req, *args, **kwargs):
+def grantsetter(user_id, client_id, code, req, *args, **kwargs):
+    session = req.context['session']
+
     expires = utcnow() + timedelta(seconds=100)
-    model.Grant.create(
+    grant = model.Grant(
         client_id=client_id,
-        code=code['code'],
+        code=code,
         redirect_uri=req.context.get('redirect_uri'),
         scope=' '.join(req.context.get('scopes')),
-        user_id=req.context['user'].id,
+        user_id=user_id,
         expires=expires,
     )
 
+    session.add(grant)
+    session.commit()
