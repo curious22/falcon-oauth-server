@@ -7,7 +7,7 @@ from app.middleware import JSONTranslator, DatabaseSessionManager
 from app.database import db_session, init_session
 
 from app.resources import base
-from app.resources import users, clients, grants, tokens
+from app.resources import users, clients, grants, tokens, auth
 from app.errors import AppError
 
 LOG = log.get_logger()
@@ -23,6 +23,7 @@ class App(falcon.API):
         self.add_route('/v1/clients', clients.ClientsResource())
         self.add_route('/v1/display_grants', grants.GrantDisplayResource())
         self.add_route('/v1/display_tokens', tokens.TokenDisplayResource())
+        self.add_route('/v1/oauth/authorize', auth.AuthorizeResource())
 
         self.add_error_handler(AppError, AppError.handle)
 
