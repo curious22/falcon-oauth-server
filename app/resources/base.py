@@ -91,11 +91,19 @@ def usergetter(username, password, req):
 
 
 @auth.tokengetter
-def tokengetter(req, access_token=None):
+def tokengetter(req, access_token=None, refresh_token=None):
     session = req.context['session']
 
     if access_token:
-        return session.query(model.Token).filter_by(access_token=access_token).first()
+        return session.query(model.Token).filter_by(
+            access_token=access_token
+        ).first()
+    if refresh_token:
+        return session.query(model.Token).filter_by(
+            refresh_token=refresh_token
+        ).first()
+
+    return None
 
 
 @auth.tokensetter
